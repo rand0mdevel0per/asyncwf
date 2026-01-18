@@ -1,15 +1,15 @@
 # AsyncWF
 
-**Model-Driven Parallel Agent Workflow CLI for claude-code**
+**Model-Driven Parallel Agent Workflow CLI**
 
-AsyncWF empowers claude-code with asynchronous multitasking capabilities through a lightweight, tool-centric CLI. Instead of wrapping the LLM in a rigid control loop, AsyncWF injects a "Parallel Workflow Protocol" directly into the model's context.
+AsyncWF empowers AI coding assistants (Claude Code, Codex, Gemini) with asynchronous multitasking capabilities. Instead of wrapping the LLM in a rigid control loop, AsyncWF injects a "Parallel Workflow Protocol" directly into the model's context.
 
 ## Features
 
+- 🤖 **Multi-Agent Support** - Claude, Codex, Gemini working together
 - 🚀 **Parallel Task Dispatch** - Spawn multiple sub-agents concurrently
 - 📚 **Skills System** - Global reusable action templates
 - 🧠 **Knowledge Base** - Model-driven learning and context persistence
-- 🔗 **Project Linking** - Connect specs to global knowledge base
 
 ## Installation
 
@@ -17,95 +17,78 @@ AsyncWF empowers claude-code with asynchronous multitasking capabilities through
 npm install -g asyncwf
 ```
 
-Or from source:
-
-```bash
-git clone https://github.com/yourname/asyncwf
-cd asyncwf
-npm install
-npm run build
-npm link
-```
-
 ## Quick Start
 
 ```bash
-# Initialize a project
+# Initialize for Claude (default)
 asyncwf init
 
-# Link specs to global KB
-asyncwf link
+# Initialize for multiple agents
+asyncwf init -c -g -x   # Claude + Gemini + Codex
 
-# Dispatch parallel tasks
-asyncwf taskmgr dispatch --job api --prompt "Write a REST API handler"
-asyncwf taskmgr dispatch --job tests --prompt "Write unit tests"
+# Multi-agent parallel workflow
+asyncwf taskmgr dispatch --job frontend --agent gemini --prompt "Create React UI..."
+asyncwf taskmgr dispatch --job backend --agent claude --prompt "Build REST API..."
+asyncwf taskmgr dispatch --job fullstack --agent codex --prompt "Integrate..."
 
-# Wait for completion
-asyncwf taskmgr wait --jobs api,tests
-
-# Fetch results
-asyncwf taskmgr fetch --job api
+# Wait and fetch
+asyncwf taskmgr wait --jobs frontend,backend,fullstack
+asyncwf taskmgr fetch --job frontend
 ```
 
 ## Commands
 
-### Setup
+### Init Options
 
-| Command | Description |
-|---------|-------------|
-| `asyncwf init` | Initialize project with `.asyncwf/` and `claude.md` |
-| `asyncwf link` | Link specs to `~/.ckb/projects/` |
+| Flag | Description |
+|------|-------------|
+| `-c, --claude` | Configure for Claude Code (default) |
+| `-g, --gemini` | Configure for Gemini CLI |
+| `-x, --codex` | Configure for OpenAI Codex |
 
 ### Task Manager
 
 | Command | Description |
 |---------|-------------|
-| `asyncwf taskmgr dispatch --job <id> --prompt "<text>" [--skill <name>]` | Spawn sub-agent |
-| `asyncwf taskmgr list [--status <status>]` | List tasks |
-| `asyncwf taskmgr wait --jobs <ids>` | Wait for completion |
-| `asyncwf taskmgr fetch --job <id>` | Get task output |
-| `asyncwf taskmgr kill --job <id>` | Terminate task |
+| `dispatch --job <id> --agent <type> --prompt "<text>"` | Spawn sub-agent |
+| `list [--status <status>]` | List tasks |
+| `wait --jobs <ids>` | Wait for completion |
+| `fetch --job <id>` | Get output |
+| `kill --job <id>` | Terminate |
 
-### Skills
+**Agent types:** `claude`, `codex`, `gemini`
 
-| Command | Description |
-|---------|-------------|
-| `asyncwf skill list` | List available skills |
-| `asyncwf skill show <name>` | Display skill content |
-| `asyncwf skill add <name> --content "<md>"` | Add/update skill |
-| `asyncwf skill use <name>` | Output for prompt injection |
-| `asyncwf skill delete <name>` | Remove skill |
+### Skills & Knowledge Base
 
-### Knowledge Base
+```bash
+asyncwf skill list                      # List skills
+asyncwf skill add <name> --content "..."  # Add skill
+asyncwf kb learn --topic <n> --content "..."  # Learn
+asyncwf kb search <query>               # Search
+```
 
-| Command | Description |
-|---------|-------------|
-| `asyncwf kb list` | List knowledge entries |
-| `asyncwf kb show <topic>` | Display entry |
-| `asyncwf kb learn --topic <name> --content "<md>"` | Learn new knowledge |
-| `asyncwf kb search <query>` | Search KB |
-| `asyncwf kb delete <topic>` | Remove entry |
+## Multi-Agent Workflow Example
+
+```
+User: "Build a login system with React frontend and Rust backend"
+
+Claude (Controller):
+1. asyncwf taskmgr dispatch --job ui --agent gemini --prompt "React login form..."
+2. asyncwf taskmgr dispatch --job api --agent claude --prompt "Rust Actix handler..."
+3. asyncwf taskmgr wait --jobs ui,api
+4. asyncwf taskmgr fetch --job ui
+5. asyncwf taskmgr fetch --job api
+```
 
 ## Directory Structure
 
 ```
-~/.ckb/                    # Global Knowledge Base
-├── skills/                # Reusable skills
-├── knowledge/             # Learned knowledge
-└── projects/              # Project symlinks
-
-.asyncwf/                  # Local project state
-├── config.json
-├── tasks.json
-└── logs/
+~/.ckb/              # Global KB (skills, knowledge, projects)
+.asyncwf/            # Local state (config, tasks, logs)
+claude.md            # Claude protocol
+GEMINI.md            # Gemini protocol (if -g)
+AGENTS.md            # Codex protocol (if -x)
 ```
-
-## How It Works
-
-1. **Controller**: Main claude-code session running in terminal
-2. **Protocol**: Instructions injected into `claude.md`
-3. **Workers**: Ephemeral sub-agents spawned via `taskmgr dispatch`
-4. **State**: Local JSON registry tracking job status
 
 ## License
 

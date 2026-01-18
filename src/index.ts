@@ -13,13 +13,16 @@ const program = new Command();
 program
     .name('asyncwf')
     .description(chalk.cyan('AsyncWF - Model-Driven Parallel Agent Workflow CLI'))
-    .version('1.0.0');
+    .version('1.1.0');
 
 // Setup commands
 program
     .command('init')
     .description('Initialize AsyncWF in the current directory')
-    .action(initCommand);
+    .option('-c, --claude', 'Configure for Claude Code (default)')
+    .option('-g, --gemini', 'Configure for Gemini CLI')
+    .option('-x, --codex', 'Configure for OpenAI Codex')
+    .action((opts) => initCommand(opts));
 
 program
     .command('link')
@@ -37,6 +40,7 @@ taskmgr
     .requiredOption('--job <id>', 'Job identifier')
     .requiredOption('--prompt <text>', 'Prompt for the sub-agent')
     .option('--skill <name>', 'Skill to inject into prompt')
+    .option('--agent <type>', 'Agent type: claude, codex, or gemini')
     .action((opts) => taskmgrCommand('dispatch', opts));
 
 taskmgr

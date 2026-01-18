@@ -1,3 +1,6 @@
+// Agent types
+export type AgentType = 'claude' | 'codex' | 'gemini';
+
 // Task status enum
 export type TaskStatus = 'pending' | 'running' | 'done' | 'failed';
 
@@ -6,6 +9,7 @@ export interface Task {
     id: string;
     prompt: string;
     skill?: string;
+    agent?: AgentType;
     status: TaskStatus;
     pid?: number;
     exitCode?: number;
@@ -62,7 +66,7 @@ export interface KnowledgeIndex {
 // Config
 export interface AsyncWFConfig {
     version: string;
-    agentCommand: string;
+    defaultAgent: AgentType;
     ckbPath: string;
 }
 

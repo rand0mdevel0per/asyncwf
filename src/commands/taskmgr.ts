@@ -7,12 +7,13 @@ import {
     getLogPath
 } from '../lib/state.js';
 import { dispatchAgent, killAgent, waitForJobs } from '../lib/agent.js';
-import type { TaskStatus } from '../types.js';
+import type { TaskStatus, AgentType } from '../types.js';
 
 interface TaskmgrOptions {
     job?: string;
     prompt?: string;
     skill?: string;
+    agent?: string;
     status?: string;
     jobs?: string;
     timeout?: string;
@@ -44,11 +45,22 @@ export async function taskmgrCommand(
 }
 
 async function handleDispatch(options: TaskmgrOptions): Promise<void> {
-    const { job, prompt, skill } = options;
+    const { job, prompt, skill, agent } = options;
 
     if (!job || !prompt) {
         console.log(chalk.red('Error: --job and --prompt are required'));
         return;
+    }
+
+    // Validate agent type if provided
+    const validAgents: AgentType[] = ['claude', 'codex', 'gemini'];
+    let agentType: AgentType | undefined;
+    if (agent) {
+        if (!validAgents.includes(agent as AgentType)) {
+            console.log(chalk.red(`Error: Invalid agent "${agent}". Valid options: ${validAgents.join(', ')}`));
+            return;
+        }
+        agentType = agent as AgentType;
     }
 
     // Check if job already exists
@@ -59,15 +71,19 @@ async function handleDispatch(options: TaskmgrOptions): Promise<void> {
     }
 
     console.log(chalk.cyan(`🚀 Dispatching job: ${job}`));
+    if (agentType) {
+        console.log(chalk.gray(`  Agent: ${agentType}`));
+    }
     if (skill) {
-        console.log(chalk.gray(`  Using skill: ${skill}`));
+        console.log(chalk.gray(`  Skill: ${skill}`));
     }
 
-    const task = await dispatchAgent(job, prompt, skill);
+    const task = await dispatchAgent(job, prompt, skill, agentType);
 
     console.log(chalk.green(`✓ Job dispatched`));
     console.log(JSON.stringify({
         id: task.id,
+        agent: task.agent,
         status: task.status,
         pid: task.pid,
         skill: task.skill,

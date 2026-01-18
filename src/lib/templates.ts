@@ -10,6 +10,32 @@ You have access to the \`asyncwf\` tool suite for managing parallel agent workfl
 - Learn and reuse skills across projects
 `;
 
+export const MULTI_AGENT_PROTOCOL = `## Multi-Agent Collaboration
+
+You can dispatch tasks to different AI agents based on their strengths:
+
+| Agent | Flag | Best For |
+|-------|------|----------|
+| Claude Code | \`--agent claude\` | Backend, system design, complex logic |
+| Codex | \`--agent codex\` | Full-stack, rapid prototyping |
+| Gemini | \`--agent gemini\` | Frontend, UI/UX, documentation |
+
+**Example - Parallel Multi-Agent Workflow:**
+\`\`\`bash
+# Frontend with Gemini
+asyncwf taskmgr dispatch --job frontend --agent gemini --prompt "Create React components for..."
+
+# Backend with Claude
+asyncwf taskmgr dispatch --job backend --agent claude --prompt "Implement REST API for..."
+
+# Full-stack integration with Codex
+asyncwf taskmgr dispatch --job integration --agent codex --prompt "Connect frontend and backend..."
+
+# Wait for all
+asyncwf taskmgr wait --jobs frontend,backend,integration
+\`\`\`
+`;
+
 export const PARALLEL_PROTOCOL = `## Parallel Execution Protocol
 
 [SYSTEM: ASYNCWF ENABLED]
@@ -23,8 +49,9 @@ If a request involves multiple distinct, independent modules (e.g., "Write the R
 2. **Check Skills**: Run \`asyncwf skill list\` to see available reusable patterns.
 3. **Dispatch**: Run multiple dispatch commands:
    \`\`\`bash
-   asyncwf taskmgr dispatch --job <id> --prompt "<context>" [--skill <name>]
+   asyncwf taskmgr dispatch --job <id> --agent <type> --prompt "<context>" [--skill <name>]
    \`\`\`
+   Agents: \`claude\` | \`codex\` | \`gemini\`
 4. **Wait**: Run \`asyncwf taskmgr wait --jobs <id1>,<id2>,...\`
 5. **Fetch & Integrate**: Run \`asyncwf taskmgr fetch --job <id>\` to see outputs.
 6. **Review**: Check for consistency between outputs.
@@ -56,6 +83,62 @@ export function generateClaudeMD(projectContext: string = ''): string {
     let content = `# AsyncWF Project Configuration
 
 ${ARCHITECT_PERSONA}
+
+${MULTI_AGENT_PROTOCOL}
+
+${PARALLEL_PROTOCOL}
+
+${FILE_WATCH_DIRECTIVE}
+`;
+
+    if (projectContext) {
+        content += `
+## Project Context
+
+${projectContext}
+`;
+    }
+
+    return content;
+}
+
+export function generateGeminiMD(projectContext: string = ''): string {
+    let content = `# AsyncWF - Gemini Agent Configuration
+
+${ARCHITECT_PERSONA}
+
+## Your Role
+You are the **Frontend & UI Specialist** in a multi-agent team.
+Focus on: React, Vue, CSS, UI/UX design, documentation.
+
+${MULTI_AGENT_PROTOCOL}
+
+${PARALLEL_PROTOCOL}
+
+${FILE_WATCH_DIRECTIVE}
+`;
+
+    if (projectContext) {
+        content += `
+## Project Context
+
+${projectContext}
+`;
+    }
+
+    return content;
+}
+
+export function generateCodexMD(projectContext: string = ''): string {
+    let content = `# AsyncWF - Codex Agent Configuration
+
+${ARCHITECT_PERSONA}
+
+## Your Role
+You are the **Full-Stack Integrator** in a multi-agent team.
+Focus on: connecting components, rapid prototyping, end-to-end features.
+
+${MULTI_AGENT_PROTOCOL}
 
 ${PARALLEL_PROTOCOL}
 

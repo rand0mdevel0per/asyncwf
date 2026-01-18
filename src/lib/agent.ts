@@ -1,17 +1,39 @@
 import { spawn, ChildProcess } from 'child_process';
-import { createWriteStream, existsSync } from 'fs';
+import { createWriteStream, existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { getLogPath, getLogsDir, createTask, updateTask, getTask } from './state.js';
 import { getSkill, formatSkillForPrompt } from './skills.js';
-import type { Task } from '../types.js';
+import type { Task, AgentType } from '../types.js';
 
 // Store child process references for kill
 const processes: Map<string, ChildProcess> = new Map();
 
+// Agent command configurations
+export const AGENT_CONFIGS: Record<AgentType, { command: string; promptArg: string[] }> = {
+    claude: { command: 'claude', promptArg: ['-p'] },
+    codex: { command: 'codex', promptArg: ['-q'] },  // codex uses -q for quiet mode with prompt
+    gemini: { command: 'gemini', promptArg: ['-p'] }, // gemini-cli
+};
+
+// Get default agent from config
+export function getDefaultAgent(): AgentType {
+    const configPath = join(process.cwd(), '.asyncwf', 'config.json');
+    if (existsSync(configPath)) {
+        try {
+            const config = JSON.parse(readFileSync(configPath, 'utf-8'));
+            return config.defaultAgent || 'claude';
+        } catch {
+            return 'claude';
+        }
+    }
+    return 'claude';
+}
+
 export async function dispatchAgent(
     jobId: string,
     prompt: string,
-    skillName?: string
+    skillName?: string,
+    agentType?: AgentType
 ): Promise<Task> {
     // Build full prompt with skill if provided
     let fullPrompt = prompt;
@@ -32,24 +54,25 @@ export async function dispatchAgent(
     const logPath = getLogPath(jobId);
     const logStream = createWriteStream(logPath);
 
+    // Determine which agent to use
+    const agent: AgentType = agentType || getDefaultAgent();
+    const agentConfig = AGENT_CONFIGS[agent];
+
     // Create task record
     const task = await createTask({
         id: jobId,
         prompt: fullPrompt,
         skill: skillName,
+        agent: agent,
         status: 'running',
         logFile: logPath,
     });
 
-    // Spawn the agent process
-    // Try claude CLI first, fallback to echo for testing
-    const agentCommand = process.env.ASYNCWF_AGENT || 'claude';
-    const args = agentCommand === 'claude'
-        ? ['-p', fullPrompt]
-        : [fullPrompt]; // For testing with echo
+    // Build command args
+    const args = [...agentConfig.promptArg, fullPrompt];
 
     try {
-        const child = spawn(agentCommand, args, {
+        const child = spawn(agentConfig.command, args, {
             detached: true,
             stdio: ['ignore', 'pipe', 'pipe'],
             shell: true,

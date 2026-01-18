@@ -1,6 +1,6 @@
 {
   "name": "asyncwf",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Model-Driven Parallel Agent Workflow CLI for claude-code",
   "type": "module",
   "main": "dist/index.js",

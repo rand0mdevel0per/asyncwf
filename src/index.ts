@@ -14,7 +14,7 @@ const program = new Command();
 program
     .name('asyncwf')
     .description(chalk.cyan('AsyncWF - Model-Driven Parallel Agent Workflow CLI'))
-    .version('1.2.0');
+    .version('1.2.1');
 
 // Setup commands
 program

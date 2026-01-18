@@ -1,5 +1,5 @@
 import chalk from 'chalk';
-import { spawn } from 'child_process';
+import { execSync } from 'child_process';
 import type { AgentType } from '../types.js';
 
 interface AgentStatus {
@@ -9,37 +9,19 @@ interface AgentStatus {
     version?: string;
 }
 
-async function checkAgentAvailable(command: string): Promise<{ available: boolean; version?: string }> {
-    return new Promise((resolve) => {
-        const child = spawn(command, ['--version'], {
-            shell: true,
-            timeout: 5000,
+function checkAgentAvailable(command: string): { available: boolean; version?: string } {
+    try {
+        const output = execSync(`${command} --version`, {
+            timeout: 3000,
+            encoding: 'utf-8',
+            stdio: ['pipe', 'pipe', 'pipe'],
+            windowsHide: true,
         });
-
-        let output = '';
-        child.stdout?.on('data', (data) => {
-            output += data.toString();
-        });
-
-        child.on('error', () => {
-            resolve({ available: false });
-        });
-
-        child.on('close', (code) => {
-            if (code === 0) {
-                const version = output.trim().split('\n')[0];
-                resolve({ available: true, version });
-            } else {
-                resolve({ available: false });
-            }
-        });
-
-        // Timeout fallback
-        setTimeout(() => {
-            child.kill();
-            resolve({ available: false });
-        }, 5000);
-    });
+        const version = output.trim().split('\n')[0];
+        return { available: true, version };
+    } catch {
+        return { available: false };
+    }
 }
 
 export async function agentCommand(action: string): Promise<void> {
@@ -65,7 +47,7 @@ async function handleStatus(): Promise<void> {
     const results: AgentStatus[] = [];
 
     for (const agent of agents) {
-        const { available, version } = await checkAgentAvailable(agent.command);
+        const { available, version } = checkAgentAvailable(agent.command);
         results.push({
             name: agent.name,
             command: agent.command,

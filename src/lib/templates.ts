@@ -10,6 +10,53 @@ You have access to the \`asyncwf\` tool suite for managing parallel agent workfl
 - Learn and reuse skills across projects
 `;
 
+export const AGENT_SELECTION_GUIDE = `## Agent Selection Guide
+
+### Check Available Agents
+Before dispatching, check which agents are available:
+\`\`\`bash
+asyncwf agent status
+\`\`\`
+
+### Agent Comparison
+
+| Agent | Strengths | Weaknesses | Best For |
+|-------|-----------|------------|----------|
+| **Claude Code** | Deep reasoning, complex logic, system design, debugging | Slower on simple tasks | Backend, architecture, Rust/Go/Python, debugging |
+| **Codex (cx)** | Fast iteration, full-stack, good context | Less deep analysis | Rapid prototyping, JS/TS, full-stack features |
+| **Gemini** | Multimodal, long context, documentation | Less coding-focused | Frontend, UI/UX, docs, code review, large files |
+
+### Decision Framework
+
+1. **Backend / System Design / Complex Logic**
+   → Use \`--agent claude\`
+   - Complex algorithms, multi-file refactoring, architecture decisions
+   
+2. **Frontend / UI / Documentation**
+   → Use \`--agent gemini\`
+   - React/Vue components, CSS, markdown docs, multimodal tasks
+   
+3. **Full-Stack / Quick Features / Integration**
+   → Use \`--agent codex\`
+   - End-to-end features, API + UI together, rapid prototyping
+
+4. **Fallback Strategy**
+   - If preferred agent unavailable, use the next best match
+   - Claude → Codex → Gemini (for backend)
+   - Gemini → Codex → Claude (for frontend)
+
+### Example: Intelligent Dispatch
+\`\`\`bash
+# Check availability first
+asyncwf agent status
+
+# Then dispatch based on task type
+asyncwf taskmgr dispatch --job auth-api --agent claude --prompt "Implement JWT auth..."
+asyncwf taskmgr dispatch --job login-ui --agent gemini --prompt "Create login form..."
+asyncwf taskmgr dispatch --job connect --agent codex --prompt "Wire API to UI..."
+\`\`\`
+`;
+
 export const MULTI_AGENT_PROTOCOL = `## Multi-Agent Collaboration
 
 You can dispatch tasks to different AI agents based on their strengths:
@@ -46,15 +93,16 @@ If a request involves multiple distinct, independent modules (e.g., "Write the R
 ### How to Use
 
 1. **Analyze**: Break the request into independent sub-tasks.
-2. **Check Skills**: Run \`asyncwf skill list\` to see available reusable patterns.
-3. **Dispatch**: Run multiple dispatch commands:
+2. **Check Agents**: Run \`asyncwf agent status\` to see available backends.
+3. **Check Skills**: Run \`asyncwf skill list\` to see available reusable patterns.
+4. **Dispatch**: Run multiple dispatch commands:
    \`\`\`bash
    asyncwf taskmgr dispatch --job <id> --agent <type> --prompt "<context>" [--skill <name>]
    \`\`\`
    Agents: \`claude\` | \`codex\` | \`gemini\`
-4. **Wait**: Run \`asyncwf taskmgr wait --jobs <id1>,<id2>,...\`
-5. **Fetch & Integrate**: Run \`asyncwf taskmgr fetch --job <id>\` to see outputs.
-6. **Review**: Check for consistency between outputs.
+5. **Wait**: Run \`asyncwf taskmgr wait --jobs <id1>,<id2>,...\`
+6. **Fetch & Integrate**: Run \`asyncwf taskmgr fetch --job <id>\` to see outputs.
+7. **Review**: Check for consistency between outputs.
 
 ### Skills Usage
 - List skills: \`asyncwf skill list\`
@@ -84,6 +132,8 @@ export function generateClaudeMD(projectContext: string = ''): string {
 
 ${ARCHITECT_PERSONA}
 
+${AGENT_SELECTION_GUIDE}
+
 ${MULTI_AGENT_PROTOCOL}
 
 ${PARALLEL_PROTOCOL}
@@ -111,6 +161,8 @@ ${ARCHITECT_PERSONA}
 You are the **Frontend & UI Specialist** in a multi-agent team.
 Focus on: React, Vue, CSS, UI/UX design, documentation.
 
+${AGENT_SELECTION_GUIDE}
+
 ${MULTI_AGENT_PROTOCOL}
 
 ${PARALLEL_PROTOCOL}
@@ -137,6 +189,8 @@ ${ARCHITECT_PERSONA}
 ## Your Role
 You are the **Full-Stack Integrator** in a multi-agent team.
 Focus on: connecting components, rapid prototyping, end-to-end features.
+
+${AGENT_SELECTION_GUIDE}
 
 ${MULTI_AGENT_PROTOCOL}
 

@@ -7,13 +7,14 @@ import { linkCommand } from './commands/link.js';
 import { taskmgrCommand } from './commands/taskmgr.js';
 import { skillCommand } from './commands/skill.js';
 import { kbCommand } from './commands/kb.js';
+import { agentCommand } from './commands/agent.js';
 
 const program = new Command();
 
 program
     .name('asyncwf')
     .description(chalk.cyan('AsyncWF - Model-Driven Parallel Agent Workflow CLI'))
-    .version('1.1.0');
+    .version('1.2.0');
 
 // Setup commands
 program
@@ -133,4 +134,15 @@ kb
     .description('Delete knowledge entry')
     .action((topic) => kbCommand('delete', { topic }));
 
+// Agent Manager
+const agent = program
+    .command('agent')
+    .description('Manage and check AI agent backends');
+
+agent
+    .command('status')
+    .description('Check availability of agent backends (claude/codex/gemini)')
+    .action(() => agentCommand('status'));
+
 program.parse();
+
